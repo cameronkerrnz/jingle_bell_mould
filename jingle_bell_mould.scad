@@ -1,22 +1,22 @@
 $fn = 32;
 
-ball_diameter = 200;
-locator_pin_diameter = 40;
+ball_diameter = 55;
+locator_pin_diameter = 12;
 locator_pins_offset_from_center = ball_diameter / 2 + locator_pin_diameter;
 locator_pins_offset_xy = locator_pins_offset_from_center * 1/sqrt(2);
 
 module ball_angel() {
     $fn=128;
     
-    detail_raised = 5;
+    detail_raised = 2;
     
     difference() {
         union() {
             for(r = [0 : 90 : 359]) {
                 rotate([90,0,r+45])
-                translate([0,10,50])
-                linear_extrude(h=ball_diameter, center=true, scale=1.0) {
-                    scale(0.6) translate([-85,-160,0])
+                translate([0,5,0])
+                linear_extrude(h=ball_diameter, scale=2.0, convexity=4) {
+                    scale(0.1) translate([-85,-160,0])
                         import("angel_mould.svg");
                 }
             }
@@ -32,16 +32,16 @@ module ball_angel() {
 module ball_koru_stars() {
     $fn=64;
     
-    detail_raised = 5;
-    detail_sunken = 5;
+    detail_raised = 2;
+    detail_sunken = 2;
     
     difference() {
         union() {
             for(r = [0 : 90 : 359]) {
                 rotate([90,0,r+45])
-                translate([0,10,50])
-                linear_extrude(h=ball_diameter, center=true, scale=1.7, convexity=6) {
-                    scale(0.4) translate([-120,-160,0]) 
+                translate([0,5,0])
+                linear_extrude(h=ball_diameter, scale=2, convexity=6) {
+                    scale(0.15) translate([-120,-160,0]) 
                         import("koru_stars.svg", layer="Raised", $fn=4);
                 }
             }
@@ -56,9 +56,9 @@ module ball_koru_stars() {
             difference() {
                 for(r = [0 : 90 : 359]) {
                     rotate([90,0,r+45])
-                    translate([0,10,50])
-                    linear_extrude(h=ball_diameter, center=true, scale=1.7, convexity=6) {
-                        scale(0.4) translate([-120,-160,0]) 
+                        translate([0,5,0])
+                        linear_extrude(h=ball_diameter, scale=2, convexity=6) {
+                        scale(0.15) translate([-120,-160,0]) 
                             import("koru_stars.svg", layer="Sunken", $fn=4);
                     }
                 }
@@ -71,12 +71,13 @@ module ball_koru_stars() {
 }
 
 module ball_press() {
-    wall_thickness = 12;
+    wall_thickness = 3;
     outer_radius = ball_diameter / 2;
     inner_radius = outer_radius - wall_thickness;
-    rise_above = 30;
-    locator_pin_taper_start_below = 20;
-    locator_pin_taper_length = 30;
+    rise_above = 4;
+    locator_pin_taper_start_below = 3 + ball_diameter * 0.05;
+    locator_pin_taper_length = ball_diameter * 0.2;
+    arm_thickness = locator_pin_diameter;
     
     difference() {
         union() {
@@ -89,12 +90,12 @@ module ball_press() {
             rotate([90,0,0]) cylinder(r=inner_radius, h=inner_radius);
         }
     }
-    rotate([0,45,0]) translate([0,-rise_above/2,0]) cube([300, rise_above, 20], center=true);
-    rotate([0,90+45,0]) translate([0,-rise_above/2,0]) cube([300, rise_above, 20], center=true);
+    rotate([0,45,0]) translate([0,-rise_above/2,0]) cube([locator_pins_offset_from_center*2, rise_above, arm_thickness], center=true);
+    rotate([0,90+45,0]) translate([0,-rise_above/2,0]) cube([locator_pins_offset_from_center*2, rise_above, arm_thickness], center=true);
     for(r = [0 : 90 : 359]) {
         rotate([0,45+r,0]) 
           translate([-locator_pins_offset_from_center,-rise_above,0])
-          rotate([-90,0,0]) union() {
+          rotate([-90,0,0]) {
             cylinder(h=rise_above + locator_pin_taper_start_below,d=locator_pin_diameter);
             translate([0,0,rise_above + locator_pin_taper_start_below])
                 cylinder(h=locator_pin_taper_length, d1=locator_pin_diameter, d2=locator_pin_diameter * 0.5);
@@ -103,11 +104,11 @@ module ball_press() {
 }
 
 module ball_mould_blank() {
-    shell_thickness = 20;
+    shell_thickness = 3;
     mould_width = ball_diameter + 2 * shell_thickness;
     rib_count = 3; // must be odd
     mid_rib = ceil(rib_count / 2); // 1 based
-    rib_thickness = 20;
+    rib_thickness = 3;
     rib_bc = mould_width / (rib_count + 1);
     flange_radius = shell_thickness; // rough
     
@@ -139,17 +140,10 @@ module ball_mould_blank() {
                 }
             }
         }
-        // holes for locator pins
-        for(r = [0 : 90 : 359]) {
-            rotate([0,45+r,0]) 
-                translate([-150,-50,0]) 
-                rotate([-90,0,0]) 
-                cylinder(h=300,r=21);
-        }
         // front-plane (break-line for mould)
         translate([0,-500,0]) cube(1000,center=true);
         // print-bed, to ensure part of shell is on the print-bed
-        translate([0,500+mould_width/2 - shell_thickness/2,0]) cube(1000,center=true);
+        translate([0,500+mould_width/2 - shell_thickness*0.5,0]) cube(1000,center=true);
         // round the corners of the flange
         
     }
@@ -178,9 +172,10 @@ module quarter_mould_right() {
 
 
 module print_set() {
-    translate([160,0,30]) rotate([90,0,0]) ball_press();
-    translate([-120,0,110]) rotate([-90,0,0]) quarter_mould_left() children();
-    translate([-100,0,110]) rotate([-90,0,0]) quarter_mould_right() children();
+    // for 55mm ball_diameter at the moment (heights need adjusting)
+    translate([ball_diameter,0,4]) rotate([90,0,0]) ball_press();
+    translate([-0.6 * ball_diameter,0,29]) rotate([-90,0,0]) quarter_mould_left() children();
+    translate([-0.4 * ball_diameter,0,29]) rotate([-90,0,0]) quarter_mould_right() children();
 }
 
 //print_set() ball_koru_stars();

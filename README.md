@@ -76,8 +76,8 @@ The Koru design show both raised and sunken embellishings; the sunken embellishi
 
 If you want to make your own designs, you can use Inkscape to create a suitable shape. Each shape needs to be an closed shape, not a path. Manually trace over the source image, avoid any tracing tools... and [Sep 2025] don't expect ChatGPT to make a useful SVG tracing.
 
-When it comes to printing, note that the model is oddly sized currently; once you've rendered it in OpenSCAD and exported it (use for .3mf format), then load it into Prusa Slicer. Use the meature tool to select the two opposing corners of the quarter-spheres, then scale it to the size you want (I recommend 55mm).
+When it comes to printing, the mould is sized for a 55mm ball, which will shrink to about 50mm. You should be able to update the `ball_diameter` variable appropriately, or resize it in the slicer.
 
-You may like to try using features such as ironing and variable layer height... the clay will pick up that detail, but you can use tools like a moist sponge, a toothbrush, or clay sculpting tools to deal with that.
+I have printed this with a 0.2mm layer height on a speed setting. You could reduce layer height or try using variable layer height... the clay does pick up the detail at 0.2mm, but you can use tools like a moist sponge, a moist toothbrush, clay sculpting tools or a smooth stone to deal with that.
 
 ![View of the sliced model](./images/koru_stars_sliced.png)
