@@ -1,6 +1,7 @@
 $fn = 32;
 
 ball_diameter = 55;
+ball_wall_thickness = 5;
 locator_pin_diameter = 12;
 locator_pins_offset_from_center = ball_diameter / 2 + locator_pin_diameter;
 locator_pins_offset_xy = locator_pins_offset_from_center * 1/sqrt(2);
@@ -72,7 +73,7 @@ module ball_koru_stars() {
 
 module ball_press() {
     wall_thickness = 3;
-    outer_radius = ball_diameter / 2;
+    outer_radius = ball_diameter / 2 - ball_wall_thickness;
     inner_radius = outer_radius - wall_thickness;
     rise_above = 4;
     locator_pin_taper_start_below = 3 + ball_diameter * 0.05;
@@ -128,15 +129,16 @@ module ball_mould_blank() {
                 translate([0, rib_thickness/2, 0])
                     cube([mould_width, rib_thickness, mould_width], center=true);
                 for(r = [0 : 90 : 359]) {
-                    rotate([0,r,0])
+                    rotate([0,45+r,0]) {
                         hull() {
-                            translate([-mould_width/2+flange_radius,0,mould_width/2-flange_radius])
-                                rotate([-90,0,0]) 
-                                cylinder(r=flange_radius, h=rib_thickness);
-                            translate([-mould_width/2,0,mould_width/2])
-                                rotate([-90,0,0]) 
-                                cylinder(r=flange_radius*2, h=rib_thickness);
+                            translate([-locator_pins_offset_from_center,0,0])
+                                rotate([-90,0,0])
+                                cylinder(h=rib_thickness, d=locator_pin_diameter + 1);
+                            translate([-locator_pins_offset_from_center - locator_pin_diameter*1/sqrt(2),0,0])
+                                rotate([-90,0,0])
+                                cylinder(h=rib_thickness, d=locator_pin_diameter*2 + 1);
                         }
+                    }
                 }
             }
         }
@@ -170,6 +172,27 @@ module quarter_mould_right() {
     }
 }
 
+module assembly_intersection_test() {
+    intersection() {
+        ball_press();
+        quarter_mould_left() children();
+        quarter_mould_right() children();
+    }
+}
+
+*!assembly_intersection_test() {
+    // should be left with nothing
+    
+    // ball_angel();
+    ball_koru_stars();
+}
+
+module assembly() {
+    ball_press();
+    quarter_mould_left() { children(); }
+    quarter_mould_right() { children(); }
+}
+!assembly() ball_koru_stars();
 
 module print_set() {
     // for 55mm ball_diameter at the moment (heights need adjusting)
@@ -178,6 +201,6 @@ module print_set() {
     translate([-0.4 * ball_diameter,0,29]) rotate([-90,0,0]) quarter_mould_right() children();
 }
 
-//print_set() ball_koru_stars();
-print_set() ball_angel();
+print_set() ball_koru_stars();
+//print_set() ball_angel();
 
